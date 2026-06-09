@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="project-card">
+
+<form method="POST">
+
+<h2 class="myprofile">Investor Profile</h2>
+<label class="form-label">Full Name</label>
+<input type="text"
+       name="name"
+       value="{{ investor.name }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">Company Name</label>
+<input type="text"
+       name="company_name"
+       value="{{ investor.company_name }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">Role at Company</label>
+<input type="text"
+       name="role"
+       value="{{ investor.role_at_company }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">Mail</label>
+<input type="email"
+       value="{{ investor.email }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">Contact</label>
+<input type="text"
+       name="contact"
+       value="{{ investor.contact }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">Registration no</label>
+<input type="text"
+       name="registration_no"
+       value="{{ investor.registration_no }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">City</label>
+<input type="text"
+       name="city"
+       value="{{ investor.city }}"
+       disabled
+       class="edit-field">
+
+<label class="form-label">About Company</label> 
+<textarea
+       name="about_company"
+       class="edit-field"
+       disabled>{{ investor.about_company }}</textarea>
+
+<div class="profile-btns">
+
+    <button type="button"
+            id="editBtn"
+            class="save-btn"
+            onclick="enableEdit()">
+        Edit Profile
+    </button>
+
+    <button type="submit"
+            id="saveBtn"
+            class="save-btn"
+            style="display:none;">
+        Save Changes
+    </button>
+
+    <a href="/investor-reset-password"
+       class="reset-btn save-btn">
+       Reset Password
+    </a>
+
+    <a href="/delete-investor-account"
+       class="delete-btn"
+       onclick="return confirm('Delete Account Permanently?')">
+       Delete Account
+    </a>
+
+</div>
+
+</form>
+
+</div>
+
+<script>
+
+function enableEdit(){
+
+    let fields =
+        document.querySelectorAll('.edit-field');
+
+    fields.forEach(function(field){
+
+        if(field.name){
+            field.removeAttribute('disabled');
+        }
+
+    });
+
+    document.getElementById('editBtn').style.display='none';
+    document.getElementById('saveBtn').style.display='inline-block';
+}
+
+</script>
+
+{% endblock %}

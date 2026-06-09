@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="card">
+
+<h2>Create Student Account</h2>
+
+<form method="POST">
+
+<input type="text"
+name="name"
+placeholder="Full Name"
+required>
+
+<!-- Email Verification -->
+
+<div class="verify-row">
+
+    <input type="email"
+           id="email"
+           name="email"
+           placeholder="Email"
+           required>
+
+    <button type="button"
+            class="verify-btn"
+            onclick="sendEmailOTP()">
+        Verify Email
+    </button>
+
+</div>
+
+<div id="email-otp-box" style="display:none;">
+
+    <input type="text"
+           id="email_otp"
+           placeholder="Enter Email OTP">
+
+    <button type="button"
+            class="verify-btn"
+            onclick="verifyEmailOTP()">
+        Submit OTP
+    </button>
+
+</div>
+
+<!-- Mobile Verification -->
+
+<div class="verify-row">
+
+    <input type="text"
+           id="contact"
+           name="contact"
+           placeholder="Contact Number"
+           required>
+
+    <!-- <button type="button"
+            class="verify-btn"
+            onclick="sendMobileOTP()">
+        Verify Mobile
+    </button> -->
+
+</div>
+
+<!-- <div id="mobile-otp-box" style="display:none;">
+
+    <input type="text"
+           id="mobile_otp"
+           placeholder="Enter Mobile OTP">
+
+    <button type="button"
+            class="verify-btn"
+            onclick="verifyMobileOTP()">
+        Submit OTP
+    </button>
+
+</div> -->
+
+<input type="password"
+name="password"
+placeholder="Password"
+required>
+
+<input type="text"
+name="university"
+placeholder="University Name"
+required>
+
+<input type="text"
+name="education"
+placeholder="Education"
+required>
+
+<input type="text"
+name="branch"
+placeholder="Branch"
+required>
+
+<input type="text"
+name="city"
+placeholder="City"
+required>
+
+<input type="text"
+       name="college_code"
+       placeholder="College Code"
+       required>
+
+<input type="text"
+name="enrollment"
+placeholder="Enrollment Number"
+required>
+
+<button type="submit" class="btn">
+Create Account
+</button>
+
+</form>
+
+<p>
+Already have an account?
+<a href="/student-login">
+Login
+</a>
+</p>
+
+</div>
+
+<script>
+
+function sendEmailOTP(){
+
+    fetch('/send-email-otp',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            email:document.getElementById('email').value
+        })
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert(data);
+        document.getElementById('email-otp-box').style.display='flex';
+    });
+
+}
+
+function verifyEmailOTP(){
+
+    fetch('/verify-email-otp',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            otp:document.getElementById('email_otp').value
+        })
+    })
+    .then(response => response.text())
+    .then(data => alert(data));
+
+}
+
+// function sendMobileOTP(){
+
+//     fetch('/send-mobile-otp',{
+//         method:'POST',
+//         headers:{
+//             'Content-Type':'application/json'
+//         },
+//         body:JSON.stringify({
+//             mobile:document.getElementById('contact').value
+//         })
+//     })
+//     .then(response => response.text())
+//     .then(data => {
+//         alert(data);
+//         document.getElementById('mobile-otp-box').style.display='flex';
+//     });
+
+// }
+
+// function verifyMobileOTP(){
+
+//     fetch('/verify-mobile-otp',{
+//         method:'POST',
+//         headers:{
+//             'Content-Type':'application/json'
+//         },
+//         body:JSON.stringify({
+//             otp:document.getElementById('mobile_otp').value
+//         })
+//     })
+//     .then(response => response.text())
+//     .then(data => alert(data));
+
+// }
+
+</script>
+
+{% endblock %}

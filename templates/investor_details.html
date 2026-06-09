@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="project-card">
+
+    <h2>{{ investor.company_name }}</h2>
+
+    <p>
+        <strong>Role:</strong>
+        {{ investor.role_at_company }}
+    </p>
+
+    <p>
+        <strong>Email:</strong>
+        {{ investor.email }}
+    </p>
+
+    <p>
+        <strong>Mobile:</strong>
+        {{ investor.mobile }}
+    </p>
+
+    <p>
+        <strong>Registration No:</strong>
+        {{ investor.registration_no }}
+    </p>
+
+    <p>
+        <strong>City:</strong>
+        {{ investor.city }}
+    </p>
+
+    <p>
+        <strong>About Company:</strong><br>
+        {{ investor.about_company }}
+    </p>
+
+</div>
+
+{% if session.get('student_id') %}
+
+<div class="contact-card">
+
+    <h3>Contact Investor</h3>
+
+    <div class="contact-buttons">
+
+        <a href="mailto:{{ investor.email }}"
+           class="contact-btn mail-btn">
+            📧 Email
+        </a>
+
+        <a href="tel:{{ investor.contact }}"
+           class="contact-btn call-btn">
+            📞 Call
+        </a>
+
+        <a href="https://wa.me/91{{ investor.contact }}"
+           target="_blank"
+           class="contact-btn whatsapp-btn">
+            💬 WhatsApp
+        </a>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

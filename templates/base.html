@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>EduBridge</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="/" style="text-decoration:none;">
+        <div class="logo">EduBridge</div>
+    </a>
+
+{% if request.path == '/projects' %}
+
+<form action="/projects" method="GET" class="nav-filter">
+
+    <select name="category"
+            onchange="this.form.submit()"
+            class="nav-domain">
+
+        <option value="">Select Project Domain</option>
+        <option value="">All Projects</option>
+        <option value="Smart Agriculture & Food Systems">
+            Smart Agriculture & Food Systems
+        </option>
+
+        <option value="Disaster Management & Public Safety">
+            Disaster Management & Public Safety
+        </option>
+
+        <option value="Education Technology & Digital Inclusion">
+            Education Technology & Digital Inclusion
+        </option>
+
+        <option value="Social Innovation & Inclusive Technology">
+            Social Innovation & Inclusive Technology
+        </option>
+
+        <option value="Smart Cities & Urban Innovation">
+            Smart Cities & Urban Innovation
+        </option>
+
+        <option value="Digital Healthcare & Well-being">
+            Digital Healthcare & Well-being
+        </option>
+
+        <option value="Environment & Climate Sustainability">
+            Environment & Climate Sustainability
+        </option>
+
+        <option value="IoT Based">
+            IoT Based
+        </option>
+
+        <option value="Hardware Based">
+            Hardware Based
+        </option>
+
+    </select>
+
+</form>
+
+{% endif %}    <div class="menu">
+
+        <a href="/">Home</a>
+        <a href="/projects">View Projects</a>
+        
+        <a href="/investors">View Investors</a>
+
+        {% if session.get('student_id') %}
+            <a href="/add-project">Add Project</a>
+        {% endif %}
+
+        <div class="profile-menu">
+
+            <button class="profile-btn" onclick="toggleMenu()">
+                More Options ▼
+            </button>
+
+            <div class="dropdown-content" id="dropdownMenu">
+
+                {% if session.get('student_id') %}
+
+                    <a href="/profile">My Profile</a>
+                    <a href="/my-projects">My Projects</a>
+                    <a href="/logout">Logout</a>
+                    <a href="/delete-account" class="danger">
+                        Delete Account
+                    </a>
+
+                {% elif session.get('investor_id') %}
+
+                    <a href="/investor-profile">My Profile</a>
+                    <a href="/projects">Browse Projects</a>
+                    <a href="/logout">Logout</a>
+                    <a href="/delete-investor-account" class="danger">
+                        Delete Account
+                    </a>
+
+                {% else %}
+
+                    <a href="/login-choice">Login / Signup</a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+
+        <div class="alert {{ category }}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.style.display='none'">
+                ✕
+            </button>
+        </div>
+
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="container">
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+
+<footer class="footer">
+
+    <div class="footer-social">
+
+        <a href="#">
+            <i class="fab fa-facebook-square"></i>
+        </a>
+
+        <a href="#">
+            <i class="fab fa-instagram"></i>
+        </a>
+
+        <a href="#">
+            <i class="fab fa-linkedin"></i>
+        </a>
+
+    </div>
+
+    <p class="footer-company">
+        © EduBridge Private Limited
+    </p>
+
+    <div class="footer-links">
+        <a href="/privacy-policy">Privacy</a>
+        <a href="/terms">Terms</a>
+    </div>
+
+</footer>
+
+<script>
+
+function toggleMenu(){
+
+    document
+    .getElementById("dropdownMenu")
+    .classList
+    .toggle("show");
+}
+
+window.onclick = function(event){
+
+    if(!event.target.matches('.profile-btn')){
+
+        let dropdown =
+        document.getElementById("dropdownMenu");
+
+        if(dropdown.classList.contains('show')){
+
+            dropdown.classList.remove('show');
+        }
+    }
+}
+
+</script>
+
+<script>
+
+setTimeout(function(){
+
+    let alerts =
+    document.querySelectorAll('.alert');
+
+    alerts.forEach(function(alert){
+
+        alert.style.opacity = "0";
+
+        setTimeout(function(){
+            alert.style.display = "none";
+        },300);
+
+    });
+
+},3000);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="details-container">
+
+    <div class="details-card">
+
+        <div class="card-header">
+            <h2>{{ project.title }}</h2>
+            <span class="owner">
+                By {{ project.owner_name }}
+            </span>
+        </div>
+
+        <div class="info-row">
+            <label>Short Description</label>
+            <p>{{ project.short_description }}</p>
+        </div>
+
+        <div class="info-row">
+            <label>Detailed Description</label>
+            <p>{{ project.detailed_description }}</p>
+        </div>
+
+        <div class="info-row">
+            <label>Category of Project</label>
+            <p>{{ project.category }}</p>
+        </div>
+
+        <div class="grid">
+
+            <div class="info-box">
+                <h4>Funding Required</h4>
+                <p>₹{{ project.funding_required }}</p>
+            </div>
+
+            <div class="info-box">
+                <h4>Interest</h4>
+                <p>{{ project.interest }}%</p>
+            </div>
+
+            <div class="info-box">
+                <h4>Return Months</h4>
+                <p>{{ project.return_months }}</p>
+            </div>
+
+            <div class="info-box">
+                <h4>Amount After Return</h4>
+                <p>
+                    ₹{{ project.final_amount }}
+                </p>
+            </div>
+
+        </div>
+{% if session.get('student_id') != project.student_id %}
+
+<div class="contact-card">
+
+    <h3>Contact Project Owner</h3>
+
+    <div class="contact-buttons">
+
+        <a href="mailto:{{ project.email }}?subject=Interest in Your Project&body=Hello, I am interested in learning more about your project."
+   class="contact-btn mail-btn">
+    📧 Email
+</a>
+
+        <a href="tel:{{ project.contact }}"
+           class="contact-btn call-btn">
+            📞 Call
+        </a>
+
+        <a href="https://wa.me/91{{ project.contact }}"
+           target="_blank"
+           class="contact-btn whatsapp-btn">
+            💬 WhatsApp
+        </a>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+        
+<br><br>
+        <div class="pdf-section">
+            
+{% if session.get('student_id') == project.student_id %}
+<div class="project-actions">
+<a href="/delete-project/{{ project.id }}"
+       class="btn-delete edit-btn"
+       onclick="return confirm('Are you sure you want to delete this project?')">
+       Delete Project
+    </a>
+<a href="/update-project/{{ project.id }}"
+   class="edit-btn">
+   Update Project
+</a>
+
+{% endif %}
+            
+    <a href="/download/{{ project.project_pdf }}"
+       class="pdf-btn">
+       Download PDF
+    </a>
+
+
+        </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

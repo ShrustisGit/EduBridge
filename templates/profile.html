@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="profile-card">
+
+<form method="POST">
+
+    <h2 class="myprofile">My Profile</h2>
+
+    <label class="form-label">Full Name</label>
+    <input type="text"
+           name="name"
+           value="{{ student.name }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">Email Address</label>
+    <input type="email"
+           name="email"
+           value="{{ student.email }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">Contact Number</label>
+    <input type="text"
+           name="contact"
+           value="{{ student.contact }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">University Name</label>
+    <input type="text"
+           name="university"
+           value="{{ student.university_name }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">College Code</label>
+    <input type="text"
+           name="college_code"
+           value="{{ student.college_code }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">Education</label>
+    <input type="text"
+           name="education"
+           value="{{ student.education }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">Branch</label>
+    <input type="text"
+           name="branch"
+           value="{{ student.branch }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">City</label>
+    <input type="text"
+           name="city"
+           value="{{ student.city }}"
+           disabled
+           class="edit-field">
+
+    <label class="form-label">Enrollment Number</label>
+    <input type="text"
+           name="enrollment"
+           value="{{ student.enrollment_no }}"
+           disabled
+           class="edit-field">
+
+    <div class="profile-actions">
+
+        <button type="button"
+                id="editBtn"
+                class="edit-btn"
+                onclick="enableEdit()">
+            Edit Profile
+        </button>
+
+        <button type="submit"
+                id="saveBtn"
+                class="save-btn"
+                style="display:none;">
+            Save Changes
+        </button>
+
+        <a href="/reset-password"
+       class="save-btn" style="text-decoration: none;">
+       Reset Password
+    </a>
+
+        <a href="/delete-account"
+           class="delete-btn"
+           onclick="return confirm('Delete your account permanently?')">
+            Delete Account
+        </a>
+
+    </div>
+
+</form>
+
+</div>
+
+<script>
+function enableEdit(){
+
+    let fields = document.querySelectorAll('.edit-field');
+
+    fields.forEach(function(field){
+        field.removeAttribute('disabled');
+    });
+
+    document.getElementById('editBtn').style.display='none';
+    document.getElementById('saveBtn').style.display='inline-block';
+}
+</script>
+
+{% endblock %}

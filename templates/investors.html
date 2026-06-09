@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2 class="myprofile">Registered Investors</h2>
+
+{% if investors %}
+
+<div class="projects-grid">
+
+    {% for investor in investors %}
+
+    <div class="project-card">
+
+        <h3>{{ investor.company_name }}</h3>
+
+        <p>
+            <strong>Role:</strong>
+            {{ investor.role_at_company }}
+        </p>
+
+        <p>
+            <strong>City:</strong>
+            {{ investor.city }}
+        </p>
+
+        <p>
+            {{ investor.about_company[:120] }}...
+        </p>
+
+        <a href="/investor/{{ investor.id }}"
+           class="view-btn">
+            View Details
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="project-card">
+    <h3>No Investors Registered Yet</h3>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2 class="page-title">
+    Projects
+</h2>
+
+<div class="projects-grid">
+
+{% if projects %}
+
+    {% for p in projects %}
+
+    <div class="project-item">
+
+        <h3>{{ p[1] }}</h3>
+
+        <p>{{ p[2] }}</p>
+
+        <p>
+            Funding Required: ₹{{ p[3] }}
+        </p>
+
+        <p>
+            <strong>Domain:</strong> {{ p[6] }}
+        </p>
+
+        <a href="/project/{{ p[0] }}"
+           class="btn-small">
+            View Details
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <div class="no-projects">
+        
+        <p>No projects are available in the selected domain.</p>
+    </div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}
