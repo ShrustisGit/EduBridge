@@ -2,70 +2,132 @@
 
 {% block content %}
 
-<div class="project-card">
+<div class="profile-card">
 
 <form method="POST">
 
-<h2 class="myprofile">Investor Profile</h2>
-<label class="form-label">Full Name</label>
-<input type="text"
-       name="name"
-       value="{{ investor.name }}"
-       disabled
-       class="edit-field">
+    <h2 class="myprofile">My Profile</h2>
 
-<label class="form-label">Company Name</label>
-<input type="text"
-       name="company_name"
-       value="{{ investor.company_name }}"
-       disabled
-       class="edit-field">
+    <div class="profile-grid">
 
-<label class="form-label">Role at Company</label>
-<input type="text"
-       name="role"
-       value="{{ investor.role_at_company }}"
-       disabled
-       class="edit-field">
+    <div class="profile-field">
+        <label>Full Name</label>
+        <input type="text"
+               name="name"
+               value="{{investor.name }}"
+               disabled
+               class="edit-field">
+    </div>
 
-<label class="form-label">Mail</label>
-<input type="email"
-       value="{{ investor.email }}"
-       disabled
-       class="edit-field">
+    <div class="profile-field">
+        <label>Registration_no</label>
+        <input type="text"
+               name="registration_no"
+               value="{{ investor.registration_no }}"
+               disabled
+               class="edit-field">
+    </div>
 
-<label class="form-label">Contact</label>
-<input type="text"
-       name="contact"
-       value="{{ investor.contact }}"
-       disabled
-       class="edit-field">
+     <div class="profile-field">
+        <label>Company Name</label>
+        <input type="text"
+               name="company_name"
+               value="{{investor.company_name }}"
+               disabled
+               class="edit-field">
+    </div>
 
-<label class="form-label">Registration no</label>
-<input type="text"
-       name="registration_no"
-       value="{{ investor.registration_no }}"
-       disabled
-       class="edit-field">
+    <div class="profile-field">
+        <label>Role at Company</label>
+        <input type="text"
+               name="role"
+               value="{{ investor.role_at_company }}"
+               disabled
+               class="edit-field">
+    </div>
 
-<label class="form-label">City</label>
-<input type="text"
-       name="city"
-       value="{{ investor.city }}"
-       disabled
-       class="edit-field">
+    
+    <div class="profile-field">
+        <label>Email Address</label>
+        <input type="email"
+               name="email"
+               value="{{ investor.email }}"
+               disabled
+               class="edit-field">
+    </div>
 
-<label class="form-label">About Company</label> 
-<textarea
-       name="about_company"
-       class="edit-field"
-       disabled>{{ investor.about_company }}</textarea>
+    <div class="profile-field">
+        <label>Contact Number</label>
+        <input type="text"
+               name="contact"
+               value="{{ investor.contact }}"
+               disabled
+               class="edit-field">
+    </div>
 
-<div class="profile-btns">
+    
+
+   <div class="location-row">
+
+    <div class="profile-group">
+        <label>🌍 Country</label>
+        <select id="country"
+                name="country"
+                value="{{ investor.country }}"
+                disabled
+               class="edit-field"
+                onchange="loadStates()">
+            <option value="">Select Country</option>
+            <option value="India">India</option>
+            <option value="USA">USA</option>
+        </select>
+    </div>
+
+    <div class="profile-group">
+        <label>🏛 State</label>
+        <select id="state"
+                name="state"
+                value="{{ investor.state }}"
+                disabled
+               class="edit-field"
+                onchange="loadCities()">
+            <option value="">Select State</option>
+            <option value="India">India</option>
+            <option value="USA">USA</option>
+        </select>
+    </div>
+ <div class="profile-group">
+        <label>📍 City</label>
+        <select id="city"
+                name="city"
+                value="{{ investor.city }}"
+                disabled
+               class="edit-field">
+            <option value="">Select City</option>
+        </select>
+    </div>
+
+</div><br>
+   <div class="about-card">
+
+    <label class="about-title">
+        About Company
+    </label>
+
+    <textarea
+        name="about_company"
+        id="aboutCompany"
+        class="about-text edit-field"
+        disabled>{{ investor.about_company }}</textarea>
+
+</div>
+
+</div>
+    <div class="profile-actions">
 
     <button type="button"
             id="editBtn"
-            class="save-btn"
+            class="edit-btn"
             onclick="enableEdit()">
         Edit Profile
     </button>
@@ -78,7 +140,7 @@
     </button>
 
     <a href="/investor-reset-password"
-       class="reset-btn save-btn">
+       class="reset-btn">
        Reset Password
     </a>
 
@@ -95,22 +157,119 @@
 </div>
 
 <script>
-
 function enableEdit(){
 
-    let fields =
-        document.querySelectorAll('.edit-field');
+    let fields = document.querySelectorAll('.edit-field');
 
     fields.forEach(function(field){
-
-        if(field.name){
-            field.removeAttribute('disabled');
-        }
-
+        field.removeAttribute('disabled');
     });
 
     document.getElementById('editBtn').style.display='none';
     document.getElementById('saveBtn').style.display='inline-block';
+}
+</script>
+<script>
+
+const data = {
+
+    India: {
+
+        Maharashtra: [
+            "Mumbai",
+            "Pune",
+            "Nagpur",
+            "Solapur"
+        ],
+
+        Karnataka: [
+            "Bangalore",
+            "Mysore",
+            "Hubli"
+        ],
+
+        Gujarat: [
+            "Ahmedabad",
+            "Surat",
+            "Vadodara"
+        ]
+
+    },
+
+    USA: {
+
+        California: [
+            "Los Angeles",
+            "San Diego",
+            "San Francisco"
+        ],
+
+        Texas: [
+            "Houston",
+            "Dallas",
+            "Austin"
+        ]
+
+    }
+
+};
+
+function loadStates(){
+
+    let country =
+        document.getElementById("country").value;
+
+    let state =
+        document.getElementById("state");
+
+    let city =
+        document.getElementById("city");
+
+    state.innerHTML =
+        '<option value="">Select State</option>';
+
+    city.innerHTML =
+        '<option value="">Select City</option>';
+
+    if(country){
+
+        for(let s in data[country]){
+
+            state.innerHTML +=
+            `<option value="${s}">
+                ${s}
+            </option>`;
+        }
+
+    }
+}
+
+function loadCities(){
+
+    let country =
+        document.getElementById("country").value;
+
+    let state =
+        document.getElementById("state").value;
+
+    let city =
+        document.getElementById("city");
+
+    city.innerHTML =
+        '<option value="">Select City</option>';
+
+    if(country && state){
+
+        data[country][state].forEach(function(c){
+
+            city.innerHTML +=
+            `<option value="${c}">
+                ${c}
+            </option>`;
+
+        });
+
+    }
 }
 
 </script>
