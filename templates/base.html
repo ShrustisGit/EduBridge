@@ -77,9 +77,9 @@ href="{{ url_for('static', filename='css/style.css') }}">
 {% endif %}    <div class="menu">
 
         <a href="/">Home</a>
-        <a href="/projects">View Projects</a>
+        <a href="/projects">Projects</a>
         
-        <a href="/investors">View Investors</a>
+        <a href="/investors">Investors</a>
 
         {% if session.get('student_id') %}
             <a href="/add-project">Add Project</a>
@@ -87,9 +87,9 @@ href="{{ url_for('static', filename='css/style.css') }}">
 
         <div class="profile-menu">
 
-            <button class="profile-btn" onclick="toggleMenu()">
-                More Options ▼
-            </button>
+            <a class="profile-btn" onclick="toggleMenu()">
+                More ▼
+            </a>
 
             <div class="dropdown-content" id="dropdownMenu">
 
@@ -139,6 +139,44 @@ href="{{ url_for('static', filename='css/style.css') }}">
         {% endfor %}
     {% endif %}
 {% endwith %}
+
+<div class="bot-icon" onclick="toggleBot()">
+    🤖
+</div>
+
+<div class="bot-box" id="botBox">
+
+    <div class="bot-header">
+        EduBridge Assistant
+    </div>
+
+    <div class="bot-body">
+
+        <button onclick="showAnswer(1)">
+            What is EduBridge?
+        </button>
+
+        <button onclick="showAnswer(2)">
+            How can I add a project?
+        </button>
+
+        <button onclick="showAnswer(3)">
+            How can investors contact me?
+        </button>
+
+        <button onclick="showAnswer(4)">
+            How do I update my project?
+        </button>
+
+        <button onclick="showAnswer(5)">
+            How do I reset my password?
+        </button>
+
+        <div id="botAnswer"></div>
+
+    </div>
+
+</div>
 
 <div class="container">
 
@@ -220,6 +258,48 @@ setTimeout(function(){
     });
 
 },3000);
+
+</script>
+
+<script>
+
+function toggleBot(){
+
+    let bot = document.getElementById("botBox");
+
+    if(bot.style.display=="block"){
+        bot.style.display="none";
+    }else{
+        bot.style.display="block";
+    }
+}
+
+function showAnswer(id){
+
+    let answer = "";
+
+    if(id==1){
+        answer = "EduBridge connects students and investors for project funding.";
+    }
+
+    if(id==2){
+        answer = "Login as Student and click Add Project from the navbar.";
+    }
+
+    if(id==3){
+        answer = "Investors can contact you through Email, Call, WhatsApp, or Chat.";
+    }
+
+    if(id==4){
+        answer = "Open your project and click the Update Project button.";
+    }
+
+    if(id==5){
+        answer = "Go to My Profile and click Reset Password.";
+    }
+
+    document.getElementById("botAnswer").innerHTML = answer;
+}
 
 </script>
 
