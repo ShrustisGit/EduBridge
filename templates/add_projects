@@ -6,10 +6,14 @@
 
     <div class="project-card">
 
-        <h2 class="myprofile">Add New Project</h2><br>
+       <div class="form-header">
+        <h2>Add Project</h2>
+    <p>Present your innovation and attract potential investors.</p>
+    </div>
+</div><br>
 
         <form method="POST" enctype="multipart/form-data">
-
+            <div class="form-group">
             <label>Project Title</label>
             <input type="text"
                    name="title"
@@ -113,10 +117,11 @@
                    required>
 
             <button type="submit" class="save-btn">
-                Save Project
-            </button>
-
+  Publish Project
+</button>
+            </div>
         </form>
+
 
     </div>
 
