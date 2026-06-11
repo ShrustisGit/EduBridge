@@ -2,39 +2,55 @@
 
 {% block content %}
 
-<div class="project-card">
+<div class="investor-profile-card">
 
-    <h2>{{ investor.company_name }}</h2>
+    <div class="investor-header">
 
-    <p>
-        <strong>Role:</strong>
-        {{ investor.role_at_company }}
-    </p>
+        <div class="investor-avatar">
+            🏢
+        </div>
 
-    <p>
-        <strong>Email:</strong>
-        {{ investor.email }}
-    </p>
+        <div>
+            <h1>{{ investor.company_name }}</h1>
+            <h4>{{ investor.name }}</h4>
+            <span class="role-badge">
+                {{ investor.role_at_company }}
+            </span>
+        </div>
 
-    <p>
-        <strong>Mobile:</strong>
-        {{ investor.mobile }}
-    </p>
+    </div>
 
-    <p>
-        <strong>Registration No:</strong>
-        {{ investor.registration_no }}
-    </p>
+    <div class="investor-grid">
 
-    <p>
-        <strong>City:</strong>
-        {{ investor.city }}
-    </p>
+        <div class="info-card">
+            <h4>📧 Email</h4>
+            <p>{{ investor.email }}</p>
+        </div>
 
-    <p>
-        <strong>About Company:</strong><br>
-        {{ investor.about_company }}
-    </p>
+        <div class="info-card">
+            <h4>📱 Mobile</h4>
+            <p>{{ investor.contact }}</p>
+        </div>
+
+        <div class="info-card">
+            <h4>📍 City</h4>
+            <p>{{ investor.city }}</p>
+        </div>
+
+        <div class="info-card">
+            <h4>🆔 Registration No</h4>
+            <p>{{ investor.registration_no }}</p>
+        </div>
+
+    </div>
+
+    <div class="about-company">
+
+        <h3>About Company</h3>
+
+        <p>{{ investor.about_company }}</p>
+
+    </div>
 
 </div>
 
@@ -42,7 +58,7 @@
 
 <div class="contact-card">
 
-    <h3>Contact Investor</h3>
+    <h3>🤝 Contact Investor</h3>
 
     <div class="contact-buttons">
 
@@ -51,12 +67,12 @@
             📧 Email
         </a>
 
-        <a href="tel:{{ investor.contact }}"
+        <a href="tel:{{ investor.mobile }}"
            class="contact-btn call-btn">
             📞 Call
         </a>
 
-        <a href="https://wa.me/91{{ investor.contact }}"
+        <a href="https://wa.me/91{{ investor.mobile }}"
            target="_blank"
            class="contact-btn whatsapp-btn">
             💬 WhatsApp
