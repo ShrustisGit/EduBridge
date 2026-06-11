@@ -5,28 +5,39 @@
 <div class="details-container">
 
     <div class="details-card">
+<div class="project-hero">
 
-        <div class="card-header">
-            <h2>{{ project.title }}</h2>
-            <span class="owner">
-                By {{ project.owner_name }}
-            </span>
+    <div>
+        <h1>{{ project.title }}</h1>
+
+        <div class="domain-badge">
+            {{ project.category }}
         </div>
 
-        <div class="info-row">
-            <label>Short Description</label>
-            <p>{{ project.short_description }}</p>
-        </div>
+        <p class="owner-name">
+            By {{ project.owner_name }}
+        </p>
+    </div>
 
-        <div class="info-row">
-            <label>Detailed Description</label>
-            <p>{{ project.detailed_description }}</p>
-        </div>
+</div>
 
-        <div class="info-row">
-            <label>Category of Project</label>
-            <p>{{ project.category }}</p>
-        </div>
+        <div class="content-card">
+
+    <h3>Project Overview</h3>
+
+    <p>{{ project.short_description }}</p>
+
+</div>
+
+<div class="content-card">
+
+    <h3>Detailed Description</h3>
+
+    <p>{{ project.detailed_description }}</p>
+
+</div>
+
+       
 
         <div class="grid">
 
