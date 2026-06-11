@@ -8,69 +8,90 @@
 
     <h2 class="myprofile">My Profile</h2>
 
-    <label class="form-label">Full Name</label>
-    <input type="text"
-           name="name"
-           value="{{ student.name }}"
-           disabled
-           class="edit-field">
+    <div class="profile-grid">
 
-    <label class="form-label">Email Address</label>
-    <input type="email"
-           name="email"
-           value="{{ student.email }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>Full Name</label>
+        <input type="text"
+               name="name"
+               value="{{ student.name }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">Contact Number</label>
-    <input type="text"
-           name="contact"
-           value="{{ student.contact }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>Email Address</label>
+        <input type="email"
+               name="email"
+               value="{{ student.email }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">University Name</label>
-    <input type="text"
-           name="university"
-           value="{{ student.university_name }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>Contact Number</label>
+        <input type="text"
+               name="contact"
+               value="{{ student.contact }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">College Code</label>
-    <input type="text"
-           name="college_code"
-           value="{{ student.college_code }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>University Name</label>
+        <input type="text"
+               name="university"
+               value="{{ student.university_name }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">Education</label>
-    <input type="text"
-           name="education"
-           value="{{ student.education }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>College Code</label>
+        <input type="text"
+               name="college_code"
+               value="{{ student.college_code }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">Branch</label>
-    <input type="text"
-           name="branch"
-           value="{{ student.branch }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>Education</label>
+        <input type="text"
+               name="education"
+               value="{{ student.education }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">City</label>
-    <input type="text"
-           name="city"
-           value="{{ student.city }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>Branch</label>
+        <input type="text"
+               name="branch"
+               value="{{ student.branch }}"
+               disabled
+               class="edit-field">
+    </div>
 
-    <label class="form-label">Enrollment Number</label>
-    <input type="text"
-           name="enrollment"
-           value="{{ student.enrollment_no }}"
-           disabled
-           class="edit-field">
+    <div class="profile-field">
+        <label>City</label>
+        <input type="text"
+               name="city"
+               value="{{ student.city }}"
+               disabled
+               class="edit-field">
+    </div>
 
+    <div class="profile-field">
+        <label>Enrollment Number</label>
+        <input type="text"
+               name="enrollment"
+               value="{{ student.enrollment_no }}"
+               disabled
+               class="edit-field">
+    </div>
+
+</div>
     <div class="profile-actions">
 
         <button type="button"
@@ -87,9 +108,9 @@
             Save Changes
         </button>
 
-        <a href="/reset-password"
-       class="save-btn" style="text-decoration: none;">
-       Reset Password
+       <a href="/reset-password"
+       class="reset-btn">
+       🔒 Reset Password
     </a>
 
         <a href="/delete-account"
