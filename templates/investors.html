@@ -6,31 +6,42 @@
 
 {% if investors %}
 
-<div class="projects-grid">
+<div class="investors-grid">
 
     {% for investor in investors %}
 
-    <div class="project-card">
+    <div class="investor-card">
 
-        <h3>{{ investor.company_name }}</h3>
+        <div class="investor-top">
 
-        <p>
-            <strong>Role:</strong>
-            {{ investor.role_at_company }}
-        </p>
+            <div class="company-icon">
+                🏢
+            </div>
 
-        <p>
-            <strong>City:</strong>
-            {{ investor.city }}
-        </p>
+            <div>
+                <h3>{{ investor.company_name }}</h3>
+                <span class="role-badge">
+                    {{ investor.role_at_company }}
+                </span>
+            </div>
 
-        <p>
-            {{ investor.about_company[:120] }}...
-        </p>
+        </div>
+
+        <div class="investor-info">
+
+            <p>
+                📍 {{ investor.city }}
+            </p>
+
+            <p class="company-desc">
+                {{ investor.about_company[:120] }}...
+            </p>
+
+        </div>
 
         <a href="/investor/{{ investor.id }}"
-           class="view-btn">
-            View Details
+           class="investor-btn">
+            View Investor →
         </a>
 
     </div>
@@ -38,7 +49,6 @@
     {% endfor %}
 
 </div>
-
 {% else %}
 
 <div class="project-card">
