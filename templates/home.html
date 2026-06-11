@@ -2,21 +2,79 @@
 
 {% block content %}
 
-<section class="hero" >
+<section class="hero">
 
-<h1>EduBridge</h1>
+    <div class="hero-left">
 
-<h2>
-Catalyzing Digital Equity Through Strategic Corporate Investment
-</h2>
+        <span class="tagline">
+            Empower Student Innovation
+        </span>
 
-<p>
-Connecting ambitious students with global impact funding.
-</p>
-<br>
-<a href="/login-choice" class="btn">
-Get Started
-</a>
+        <h1>
+            India's Emerging
+            <span>Student Investment Platform</span>
+        </h1>
+
+        <p>
+            EduBridge connects talented students with investors,
+            enabling innovative projects to secure funding and grow.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="/projects" class="btn-orange">
+                Explore Projects
+            </a>
+
+            <a href="/login-choice" class="btn-white">
+                Join EduBridge
+            </a>
+
+        </div>
+
+        <div class="domain-tags">
+
+            <span>Education</span>
+            <span>Healthcare</span>
+            <span>Agriculture</span>
+            <span>Smart Cities</span>
+            <span>Sustainability</span>
+
+        </div>
+
+    </div>
+
+    <div class="hero-right">
+
+        <img src="{{ url_for('static',
+        filename='images/hero-dashboard.png') }}"
+        alt="EduBridge">
+
+    </div>
+
+</section>
+
+<section class="stats">
+
+    <div class="stat-card">
+        <h2>150+</h2>
+        <p>Projects Listed</p>
+    </div>
+
+    <div class="stat-card">
+        <h2>50+</h2>
+        <p>Investors</p>
+    </div>
+
+    <div class="stat-card">
+        <h2>₹10L+</h2>
+        <p>Funding Requested</p>
+    </div>
+
+    <div class="stat-card">
+        <h2>20+</h2>
+        <p>Universities</p>
+    </div>
 
 </section>
 
