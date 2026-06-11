@@ -258,6 +258,8 @@ def investor_signup():
         email = request.form['email']
         contact = request.form['contact']
         registration_no = request.form['registration_no']
+        country = request.form['country']
+        state = request.form['state']
         city = request.form['city']
         about_company = request.form['about_company']
         password = request.form['password']
@@ -284,11 +286,13 @@ def investor_signup():
             email,
             contact,
             registration_no,
+            country,
+            state,
             city,
             about_company,
             password
         )
-        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (
             name,
@@ -297,6 +301,8 @@ def investor_signup():
             email,
             contact,
             registration_no,
+            country,
+            state,
             city,
             about_company,
             password
@@ -357,6 +363,8 @@ def investor_profile():
         role = request.form['role']
         contact = request.form['contact']
         registration_no = request.form['registration_no']
+        country = request.form['country']
+        state = request.form['state']
         city = request.form['city']
         about_company = request.form['about_company']
 
@@ -367,6 +375,8 @@ def investor_profile():
             role_at_company=%s,
             contact=%s,
             registration_no=%s,
+            country=%s,
+            state=%s,
             city=%s,
             about_company=%s
         WHERE id=%s
@@ -377,6 +387,8 @@ def investor_profile():
             role,
             contact,
             registration_no,
+            country,
+            state,
             city,
             about_company,
             session['investor_id']
