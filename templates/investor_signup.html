@@ -63,11 +63,39 @@
        name="registration_no"
        placeholder="Company Registration Number"
        required>
+<div class="location-row">
 
-<input type="text"
-       name="city"
-       placeholder="City"
-       required>
+    <div class="profile-group">
+        <label>🌍 Country</label>
+        <select id="country"
+                name="country"
+               
+                onchange="loadStates()">
+            <option value="">Select Country</option>
+            <option value="India">India</option>
+            <option value="USA">USA</option>
+        </select>
+    </div>
+
+    <div class="profile-group">
+        <label>🏛 State</label>
+        <select id="state"
+                name="state"
+                
+                onchange="loadCities()">
+            <option value="">Select State</option>
+        </select>
+    </div>
+ <div class="profile-group">
+        <label>📍 City</label>
+        <select id="city"
+                name="city"
+                >
+            <option value="">Select City</option>
+        </select>
+    </div>
+
+</div>
 
 <textarea
        name="about_company"
@@ -130,6 +158,111 @@ function verifyEmailOTP(){
     .then(response => response.text())
     .then(data => alert(data));
 
+}
+
+</script>
+
+<script>
+
+const data = {
+
+    India: {
+
+        Maharashtra: [
+            "Mumbai",
+            "Pune",
+            "Nagpur",
+            "Solapur"
+        ],
+
+        Karnataka: [
+            "Bangalore",
+            "Mysore",
+            "Hubli"
+        ],
+
+        Gujarat: [
+            "Ahmedabad",
+            "Surat",
+            "Vadodara"
+        ]
+
+    },
+
+    USA: {
+
+        California: [
+            "Los Angeles",
+            "San Diego",
+            "San Francisco"
+        ],
+
+        Texas: [
+            "Houston",
+            "Dallas",
+            "Austin"
+        ]
+
+    }
+
+};
+
+function loadStates(){
+
+    let country =
+        document.getElementById("country").value;
+
+    let state =
+        document.getElementById("state");
+
+    let city =
+        document.getElementById("city");
+
+    state.innerHTML =
+        '<option value="">Select State</option>';
+
+    city.innerHTML =
+        '<option value="">Select City</option>';
+
+    if(country){
+
+        for(let s in data[country]){
+
+            state.innerHTML +=
+            `<option value="${s}">
+                ${s}
+            </option>`;
+        }
+
+    }
+}
+
+function loadCities(){
+
+    let country =
+        document.getElementById("country").value;
+
+    let state =
+        document.getElementById("state").value;
+
+    let city =
+        document.getElementById("city");
+
+    city.innerHTML =
+        '<option value="">Select City</option>';
+
+    if(country && state){
+
+        data[country][state].forEach(function(c){
+
+            city.innerHTML +=
+            `<option value="${c}">
+                ${c}
+            </option>`;
+
+        });
+
+    }
 }
 
 </script>
