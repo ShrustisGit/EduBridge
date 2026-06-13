@@ -116,7 +116,13 @@
        class="pdf-btn">
        Download PDF
     </a>
+<button type="button"
+        class="chat-open-btn owner-chat-btn"
+        onclick="openChat()">
 
+    💬 View Chats
+
+</button>
 
         </div>
         </div>
@@ -124,5 +130,143 @@
     </div>
 
 </div>
+<div id="chatPopup" class="chat-popup">
+
+    <div class="chat-header">
+
+        <h3>💬 Project Discussion</h3>
+
+        <button type="button"
+                onclick="closeChat()">
+            ✖
+        </button>
+
+    </div>
+
+    <div class="chat-body" id="chatBody">
+<div class="chat-body" id="chatBody">
+
+{% for msg in messages %}
+
+    {% if msg.sender_type == 'student' %}
+
+        <div class="owner-msg">
+            <div class="msg-header">
+                {{ student_contact }}
+            </div>
+            {{ msg.message }}
+        </div>
+
+    {% else %}
+
+        <div class="user-msg">
+            <div class="msg-header">
+                {{ investor_contact }}
+            </div>
+            {{ msg.message }}
+        </div>
+
+    {% endif %}
+
+{% endfor %}
+
+</div>
+
+</div>
+    <form id="chatForm"
+          action="/send-message/{{ room_id  }}"
+          method="POST"
+          class="chat-footer">
+
+        <input type="text"
+               id="messageInput"
+               name="message"
+               placeholder="Type your message..."
+               required>
+
+        <button type="submit">
+            Send
+        </button>
+
+    </form>
+
+    <a href="/delete-chat/{{ room_id  }}"
+       class="delete-chat-btn"
+       onclick="return confirm('Delete all messages?')">
+
+       🗑 Delete Chat
+
+    </a>
+
+</div>
+
+<script>
+
+function openChat(){
+    document.getElementById("chatPopup").style.display = "flex";
+}
+
+function closeChat(){
+    document.getElementById("chatPopup").style.display = "none";
+}
+
+
+// =============================
+// SEND MESSAGE (AJAX)
+// =============================
+document.getElementById("chatForm")
+.addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    let input = document.getElementById("messageInput");
+    let text = input.value.trim();
+
+    if(text === "") return;
+
+    fetch(this.action, {
+        method: "POST",
+        body: new FormData(this)
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        // sender details from backend
+        let name = data.sender.name || "Unknown";
+        let contact = data.sender.contact || "";
+
+        // decide alignment
+        let msgClass = data.sender_type === "student"
+            ? "owner-msg"
+            : "user-msg";
+
+        // create message HTML
+        let html = `
+            <div class="${msgClass}">
+                <div class="msg-header">
+                    ${name} ${contact ? " | " + contact : ""}
+                </div>
+                <div class="msg-body">
+                    ${data.message}
+                </div>
+            </div>
+        `;
+
+        // append message
+        let chatBody = document.getElementById("chatBody");
+        chatBody.insertAdjacentHTML("beforeend", html);
+
+        // clear input
+        input.value = "";
+
+        // auto scroll to bottom
+        chatBody.scrollTop = chatBody.scrollHeight;
+    })
+    .catch(err => {
+        console.error("Chat error:", err);
+    });
+
+});
+</script>
 
 {% endblock %}
