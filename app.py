@@ -10,6 +10,7 @@ from flask_mail import Mail
 from dotenv import load_dotenv
 from flask_mail import Message
 from flask import flash
+from flask import jsonify
 import random
 
 
@@ -136,6 +137,8 @@ def student_signup():
         college_code = request.form['college_code']
         education = request.form['education']
         branch = request.form['branch']
+        country = request.form['country']
+        state = request.form['state']
         city = request.form['city']
         enrollment = request.form['enrollment']
 
@@ -172,10 +175,12 @@ def student_signup():
             college_code,
             education,
             branch,
+            country,
+            state,
             city,
             enrollment_no
         )
-        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (
             name,
@@ -186,6 +191,8 @@ def student_signup():
             college_code,
             education,
             branch,
+            country,
+            state,
             city,
             enrollment
         ))
@@ -708,29 +715,134 @@ def projects():
         projects=data,
         selected_category=category
     )
+
 @app.route('/project/<int:id>')
 def project_details(id):
 
     cur = mysql.connection.cursor(DictCursor)
 
+    # ==========================
+    # PROJECT
+    # ==========================
     cur.execute("""
-    SELECT p.*,
-           s.name AS owner_name,
-           s.email,
-           s.contact
-    FROM projects p
-    JOIN students s
-    ON p.student_id = s.id
-    WHERE p.id=%s
-""",(id,))
+        SELECT
+            p.*,
+            s.name AS owner_name,
+            s.email,
+            s.contact
+
+        FROM projects p
+
+        LEFT JOIN students s
+        ON p.student_id = s.id
+
+        WHERE p.id=%s
+    """, (id,))
 
     project = cur.fetchone()
 
+    if not project:
+        cur.close()
+        return "Project not found"
+
+    # ==========================
+    # STUDENT (OWNER) DETAILS + CONTACT
+    # ==========================
+    cur.execute("""
+        SELECT id, name, email, contact, university_name, city, state
+        FROM students
+        WHERE id=%s
+    """, (project['student_id'],))
+
+    student = cur.fetchone()
+
+    student_name = student['name'] if student else "Unknown"
+    student_contact = student['contact'] if student else "N/A"
+
+    # ==========================
+    # CONVERSATION ROOM
+    # ==========================
+    cur.execute("""
+        SELECT id
+        FROM project_conversations
+        WHERE project_id=%s
+        LIMIT 1
+    """, (id,))
+
+    room = cur.fetchone()
+
+    if room:
+        room_id = room['id']
+    else:
+        cur.execute("""
+            INSERT INTO project_conversations
+            (project_id, student_id, investor_id)
+            VALUES (%s, %s, 0)
+        """, (id, project['student_id']))
+
+        mysql.connection.commit()
+        room_id = cur.lastrowid
+
+    # ==========================
+    # MESSAGES
+    # ==========================
+    cur.execute("""
+        SELECT *
+        FROM chat_messages
+        WHERE room_id=%s
+        ORDER BY created_at ASC
+    """, (room_id,))
+
+    messages = cur.fetchall()
+
+    # ==========================
+    # INVESTORS CONNECTED
+    # ==========================
+    cur.execute("""
+        SELECT i.id, i.name, i.email, i.contact, i.company_name, i.city, i.state
+        FROM project_conversations pc
+        JOIN investors i ON pc.investor_id = i.id
+        WHERE pc.project_id=%s
+        AND pc.investor_id != 0
+    """, (id,))
+
+    investors = cur.fetchall()
+
+    # ==========================
+    # INVESTOR CONTACT (CURRENT CHAT USER)
+    # ==========================
+    investor_name = None
+    investor_contact = None
+
+    if session.get('investor_id'):
+        cur.execute("""
+            SELECT name, contact
+            FROM investors
+            WHERE id=%s
+        """, (session['investor_id'],))
+
+        inv = cur.fetchone()
+
+        if inv:
+            investor_name = inv['name']
+            investor_contact = inv['contact']
+
     cur.close()
 
+    # ==========================
+    # RETURN
+    # ==========================
     return render_template(
-        'project_details.html',
-        project=project
+        "project_details.html",
+        project=project,
+        student=student,
+        student_name=student_name,
+        student_contact=student_contact,
+        investors=investors,
+        investor_name=investor_name,
+        investor_contact=investor_contact,
+        messages=messages,
+        room_id=room_id
     )
 
 @app.route('/delete-account')
@@ -899,6 +1011,8 @@ def profile():
             college_code=%s,
             education=%s,
             branch=%s,
+            country=%s,
+            state=%s,
             city=%s,
             enrollment_no=%s
         WHERE id=%s
@@ -911,6 +1025,8 @@ def profile():
             request.form['college_code'],
             request.form['education'],
             request.form['branch'],
+            request.form['country'],
+            request.form['state'],
             request.form['city'],
             request.form['enrollment'],
             session['student_id']
@@ -939,77 +1055,230 @@ def profile():
         student=student
     )
 
-
 @app.route('/chat/<int:project_id>')
 def chat(project_id):
 
-    if 'investor_id' not in session:
-        return redirect('/investor-login')
+    if not session.get('student_id') and not session.get('investor_id'):
+        return redirect('/login-choice')
 
     cur = mysql.connection.cursor(DictCursor)
 
+    # =========================
+    # GET PROJECT
+    # =========================
     cur.execute("""
         SELECT student_id
         FROM projects
         WHERE id=%s
-    """,(project_id,))
+    """, (project_id,))
 
     project = cur.fetchone()
 
+    if not project:
+        cur.close()
+        return "Project Not Found"
+
     student_id = project['student_id']
-    investor_id = session['investor_id']
 
+    # =========================
+    # GET STUDENT INFO
+    # =========================
     cur.execute("""
-        SELECT *
-        FROM project_conversations
-        WHERE project_id=%s
-        AND investor_id=%s
-    """,(project_id, investor_id))
+        SELECT name, contact
+        FROM students
+        WHERE id=%s
+    """, (student_id,))
 
-    conversation = cur.fetchone()
+    student = cur.fetchone()
 
-    if not conversation:
+    # =========================
+    # STUDENT (OWNER) VIEW
+    # =========================
+    if session.get('student_id') == student_id:
 
         cur.execute("""
-            INSERT INTO project_conversations
-            (
-                project_id,
-                student_id,
-                investor_id
-            )
-            VALUES(%s,%s,%s)
-        """,
-        (
-            project_id,
-            student_id,
-            investor_id
-        ))
+            SELECT 
+                cm.id,
+                cm.message,
+                cm.sender_type,
+                cm.sender_id,
+                s.name AS student_name,
+                s.contact AS student_contact,
+                i.name AS investor_name,
+                i.contact AS investor_contact
+            FROM chat_messages cm
+            LEFT JOIN students s 
+                ON cm.sender_type='student' AND cm.sender_id = s.id
+            LEFT JOIN investors i 
+                ON cm.sender_type='investor' AND cm.sender_id = i.id
+            JOIN project_conversations pc 
+                ON cm.room_id = pc.id
+            WHERE pc.project_id=%s
+            ORDER BY cm.created_at ASC
+        """, (project_id,))
 
-        mysql.connection.commit()
+        messages = cur.fetchall()
 
-        conversation_id = cur.lastrowid
+        cur.close()
 
-    else:
+        return render_template(
+            'chat.html',
+            project_id=project_id,
+            messages=messages,
+            student_name=student['name'],
+            student_contact=student['contact']
+        )
 
-        conversation_id = conversation['id']
+    # =========================
+    # INVESTOR VIEW
+    # =========================
+    investor_id = session.get('investor_id')
 
-    cur.execute("""
-        SELECT *
-        FROM chat_messages
-        WHERE conversation_id=%s
-        ORDER BY created_at
-    """,(conversation_id,))
+    if investor_id:
 
-    messages = cur.fetchall()
+        # get investor info
+        cur.execute("""
+            SELECT name, contact
+            FROM investors
+            WHERE id=%s
+        """, (investor_id,))
+
+        investor = cur.fetchone()
+
+        # get or create conversation
+        cur.execute("""
+            SELECT id
+            FROM project_conversations
+            WHERE project_id=%s
+            AND investor_id=%s
+        """, (project_id, investor_id))
+
+        conversation = cur.fetchone()
+
+        if not conversation:
+
+            cur.execute("""
+                INSERT INTO project_conversations
+                (project_id, student_id, investor_id)
+                VALUES (%s, %s, %s)
+            """, (project_id, student_id, investor_id))
+
+            mysql.connection.commit()
+
+            conversation_id = cur.lastrowid
+
+        else:
+            conversation_id = conversation['id']
+
+        # =========================
+        # GET MESSAGES
+        # =========================
+        cur.execute("""
+            SELECT 
+                cm.id,
+                cm.message,
+                cm.sender_type,
+                cm.sender_id,
+                s.name AS student_name,
+                s.contact AS student_contact,
+                i.name AS investor_name,
+                i.contact AS investor_contact
+            FROM chat_messages cm
+            LEFT JOIN students s 
+                ON cm.sender_type='student' AND cm.sender_id = s.id
+            LEFT JOIN investors i 
+                ON cm.sender_type='investor' AND cm.sender_id = i.id
+            WHERE cm.room_id=%s
+            ORDER BY cm.created_at ASC
+        """, (conversation_id,))
+
+        messages = cur.fetchall()
+
+        cur.close()
+
+        return render_template(
+            'chat.html',
+            project_id=project_id,
+            conversation_id=conversation_id,
+            messages=messages,
+            student_name=student['name'],
+            student_contact=student['contact'],
+            investor_name=investor['name'],
+            investor_contact=investor['contact']
+        )
 
     cur.close()
+    return redirect('/login-choice')
 
-    return render_template(
-        'chat.html',
-        conversation_id=conversation_id,
-        messages=messages,
-        project_id=project_id
-    )
+@app.route('/send-message/<int:room_id>', methods=['POST'])
+def send_message(room_id):
+
+    message = request.form['message']
+
+    cur = mysql.connection.cursor(DictCursor)
+
+    # -------------------------
+    # Identify sender
+    # -------------------------
+    if session.get('student_id'):
+        sender_id = session['student_id']
+        sender_type = "student"
+
+        cur.execute("""
+            SELECT name, contact, email
+            FROM students
+            WHERE id=%s
+        """, (sender_id,))
+        sender = cur.fetchone()
+
+    else:
+        sender_id = session['investor_id']
+        sender_type = "investor"
+
+        cur.execute("""
+            SELECT name, contact, email, company_name
+            FROM investors
+            WHERE id=%s
+        """, (sender_id,))
+        sender = cur.fetchone()
+
+    # -------------------------
+    # Insert message
+    # -------------------------
+    cur.execute("""
+        INSERT INTO chat_messages
+        (room_id, sender_id, sender_type, message)
+        VALUES (%s, %s, %s, %s)
+    """, (room_id, sender_id, sender_type, message))
+
+    mysql.connection.commit()
+    cur.close()
+
+    # -------------------------
+    # Return FULL sender data
+    # -------------------------
+    return jsonify({
+        "status": "success",
+        "message": message,
+        "sender_type": sender_type,
+        "sender": sender
+    })
+
+
+@app.route('/delete-chat/<int:room_id>')
+def delete_chat(room_id):
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        DELETE FROM chat_messages
+        WHERE room_id=%s
+    """, (room_id,))
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect(request.referrer)
 
 @app.route('/privacy-policy')
 def privacy_policy():
