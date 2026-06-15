@@ -111,7 +111,12 @@
 </a>
 
 {% endif %}
-            
+    {% if session.get('investor_id') %}
+
+
+
+{% endif %}
+
     <a href="/download/{{ project.project_pdf }}"
        class="pdf-btn">
        Download PDF
@@ -124,9 +129,38 @@
 
 </button>
 
-        </div>
-        </div>
 
+
+        </div>
+        </div>
+<div class="investor-section">
+
+    <!-- THEORY -->
+    <div class="investor-info-box">
+
+        <h4>🎯 Interested Investors</h4>
+
+        <p>
+            Investors are individuals or organizations who are willing to fund your project.
+            They review your idea, check details, and decide whether to invest.
+            You can accept or reject their investment requests after reviewing their profile.
+        </p>
+
+        <small>
+            Tip: Always verify investor background before approving funding.
+        </small>
+
+    </div>
+
+    <!-- BUTTON (BELOW THEORY) -->
+    <button class="occasion-btn"
+            onclick="openInvestors()">
+
+        🎯 View Interested Investors
+
+    </button>
+
+</div>
     </div>
 
 </div>
@@ -199,7 +233,92 @@
     </a>
 
 </div>
+<div id="investorPopup" class="investor-popup">
 
+    <div class="popup-header">
+
+        <h3>🎯 Interested Investors</h3>
+
+        <button type="button"
+                onclick="closeInvestors()">
+            ✖
+        </button>
+
+    </div>
+
+    <div class="popup-body">
+
+        {% if session.get('investor_id') %}
+
+<a href="/invest-request/{{ project.id }}"
+   class="invest-btn">
+
+   💰 I Want To Invest
+
+</a><br><br>
+
+{% endif %}
+       {% for investor in investment_requests %}
+
+<div class="investor-card">
+
+    <h4>{{ investor.name }}</h4>
+
+    <p><b>Company:</b> {{ investor.company_name }}</p>
+
+    <p><b>Role:</b> {{ investor.role_at_company }}</p>
+
+    <p><b>City:</b> {{ investor.city }}</p>
+
+    <p><b>Status:</b> {{ investor.status }}</p>
+
+    <a href="/investor/{{ investor.investor_id }}"
+       class="view-investor-btn">
+
+       View Profile →
+
+    </a>
+<br><br>
+    {% if session.get('student_id') == project.student_id %}
+
+        {% if investor.status == 'Pending' %}
+
+        <a href="/approve-investor/{{ investor.id }}"
+           class="approve-btn">
+
+           Approve
+
+        </a>
+
+        <a href="/reject-investor/{{ investor.id }}"
+           class="reject-btn">
+
+           Reject
+
+        </a>
+
+        {% elif investor.status == 'Approved' %}
+
+        <span class="approved-status">
+            Approved
+        </span>
+
+        {% else %}
+
+        <span class="rejected-status">
+            Rejected
+        </span>
+
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+{% endfor %}
+    </div>
+
+</div>
 <script>
 
 function openChat(){
@@ -267,6 +386,21 @@ document.getElementById("chatForm")
     });
 
 });
+</script>
+<script>
+
+function openInvestors(){
+    document.getElementById(
+        "investorPopup"
+    ).style.display="block";
+}
+
+function closeInvestors(){
+    document.getElementById(
+        "investorPopup"
+    ).style.display="none";
+}
+
 </script>
 
 {% endblock %}
