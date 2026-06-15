@@ -722,7 +722,7 @@ def project_details(id):
     cur = mysql.connection.cursor(DictCursor)
 
     # ==========================
-    # PROJECT
+    # PROJECT DETAILS
     # ==========================
     cur.execute("""
         SELECT
@@ -730,12 +730,9 @@ def project_details(id):
             s.name AS owner_name,
             s.email,
             s.contact
-
         FROM projects p
-
         LEFT JOIN students s
         ON p.student_id = s.id
-
         WHERE p.id=%s
     """, (id,))
 
@@ -746,7 +743,7 @@ def project_details(id):
         return "Project not found"
 
     # ==========================
-    # STUDENT (OWNER) DETAILS + CONTACT
+    # STUDENT DETAILS
     # ==========================
     cur.execute("""
         SELECT id, name, email, contact, university_name, city, state
@@ -796,10 +793,11 @@ def project_details(id):
     messages = cur.fetchall()
 
     # ==========================
-    # INVESTORS CONNECTED
+    # INVESTORS LISTED IN PROJECT
     # ==========================
     cur.execute("""
-        SELECT i.id, i.name, i.email, i.contact, i.company_name, i.city, i.state
+        SELECT i.id, i.name, i.email, i.contact,
+               i.company_name, i.city, i.state
         FROM project_conversations pc
         JOIN investors i ON pc.investor_id = i.id
         WHERE pc.project_id=%s
@@ -809,7 +807,7 @@ def project_details(id):
     investors = cur.fetchall()
 
     # ==========================
-    # INVESTOR CONTACT (CURRENT CHAT USER)
+    # CURRENT INVESTOR INFO
     # ==========================
     investor_name = None
     investor_contact = None
@@ -827,10 +825,31 @@ def project_details(id):
             investor_name = inv['name']
             investor_contact = inv['contact']
 
+    # ==========================
+    # INVESTMENT REQUESTS (FIXED HERE)
+    # ==========================
+        cur.execute("""
+            SELECT
+            ir.*,
+            i.name,
+            i.company_name,
+            i.role_at_company,
+            i.city
+            FROM investment_requests ir
+            JOIN investors i
+            ON ir.investor_id = i.id
+            WHERE ir.project_id=%s
+            ORDER BY ir.created_at DESC
+        """,(id,))
+
+    investment_requests = cur.fetchall()
+
+    print("Investment Requests:", investment_requests)
+
     cur.close()
 
     # ==========================
-    # RETURN
+    # RENDER
     # ==========================
     return render_template(
         "project_details.html",
@@ -842,9 +861,9 @@ def project_details(id):
         investor_name=investor_name,
         investor_contact=investor_contact,
         messages=messages,
-        room_id=room_id
+        room_id=room_id,
+        investment_requests=investment_requests
     )
-
 @app.route('/delete-account')
 def delete_account():
 
@@ -1279,6 +1298,114 @@ def delete_chat(room_id):
     cur.close()
 
     return redirect(request.referrer)
+
+
+
+@app.route('/invest-request/<int:project_id>')
+def invest_request(project_id):
+
+    if not session.get('investor_id'):
+        return redirect('/investor-login')
+
+    investor_id = session['investor_id']
+
+    cur = mysql.connection.cursor(DictCursor)
+
+    cur.execute("""
+        SELECT student_id
+        FROM projects
+        WHERE id=%s
+    """,(project_id,))
+
+    project = cur.fetchone()
+
+    if not project:
+        return "Project Not Found"
+
+    student_id = project['student_id']
+
+    cur.execute("""
+        SELECT *
+        FROM investment_requests
+        WHERE project_id=%s
+        AND investor_id=%s
+    """,(project_id, investor_id))
+
+    existing = cur.fetchone()
+
+    if not existing:
+
+        cur.execute("""
+            INSERT INTO investment_requests
+            (
+                project_id,
+                student_id,
+                investor_id
+            )
+            VALUES(%s,%s,%s)
+        """,
+        (
+            project_id,
+            student_id,
+            investor_id
+        ))
+
+        mysql.connection.commit()
+
+    cur.close()
+
+    flash(
+        "Investment request sent successfully!",
+        "success"
+    )
+
+    return redirect(f"/project/{project_id}")
+
+
+@app.route('/approve-investor/<int:req_id>')
+def approve_investor(req_id):
+
+    if not session.get('student_id'):
+        return "Access Denied"
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        UPDATE investment_requests
+        SET status='Approved'
+        WHERE id=%s
+    """,(req_id,))
+
+    mysql.connection.commit()
+
+    cur.close()
+
+    return redirect(request.referrer)
+
+
+@app.route('/reject-investor/<int:req_id>')
+def reject_investor(req_id):
+
+    if not session.get('student_id'):
+        return "Access Denied"
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        UPDATE investment_requests
+        SET status='Rejected'
+        WHERE id=%s
+    """,(req_id,))
+
+    mysql.connection.commit()
+
+    cur.close()
+
+    return redirect(request.referrer)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 @app.route('/privacy-policy')
 def privacy_policy():
