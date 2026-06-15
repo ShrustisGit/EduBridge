@@ -3,6 +3,7 @@ EduBridge is a web-based platform that connects students with investors by provi
 
 Features:-
 Student Registration and Login.
+
 Investor Registration and Login.
 Student and Investor Profile Management.
 Project Upload, Update, View, and Delete.
