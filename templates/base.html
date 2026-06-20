@@ -74,18 +74,47 @@ href="{{ url_for('static', filename='css/style.css') }}">
 
 </form>
 
-{% endif %}    <div class="menu">
+{% endif %}    
+<div class="menu">
 
-        <a href="/">Home</a>
-        
-    <a href="/about">About Us</a>
+    <a href="/">Home</a>
 
-        <a href="/projects">Projects</a>
-        
-        <a href="/investors">Investors</a>
+    {% if session.get('admin_id') %}
+
+        <a href="/admin-dashboard">
+            🛡️ Admin Dashboard
+        </a>
+
+        <a href="/projects">
+            Projects
+        </a>
+
+        <a href="/investors">
+            Investors
+        </a>
+
+        <a href="/admin-logout">
+            Logout
+        </a>
+
+    {% else %}
+
+        <a href="/about">About Us</a>
+
+        <a href="/projects">
+            Projects
+        </a>
+
+        <a href="/investors">
+            Investors
+        </a>
 
         {% if session.get('student_id') %}
-            <a href="/add-project">Add Project</a>
+
+            <a href="/add-project">
+                Add Project
+            </a>
+
         {% endif %}
 
         <div class="profile-menu">
@@ -98,25 +127,47 @@ href="{{ url_for('static', filename='css/style.css') }}">
 
                 {% if session.get('student_id') %}
 
-                    <a href="/profile">My Profile</a>
-                    <a href="/my-projects">My Projects</a>
-                    <a href="/logout">Logout</a>
-                    <a href="/delete-account" class="danger">
+                    <a href="/profile">
+                        My Profile
+                    </a>
+
+                    <a href="/my-projects">
+                        My Projects
+                    </a>
+
+                    <a href="/logout">
+                        Logout
+                    </a>
+
+                    <a href="/delete-account"
+                       class="danger">
+
                         Delete Account
+
                     </a>
 
                 {% elif session.get('investor_id') %}
 
-                    <a href="/investor-profile">My Profile</a>
-                    <a href="/projects">Browse Projects</a>
-                    <a href="/logout">Logout</a>
-                    <a href="/delete-investor-account" class="danger">
+                    <a href="/investor-profile">
+                        My Profile
+                    </a>
+
+                    <a href="/logout">
+                        Logout
+                    </a>
+
+                    <a href="/delete-investor-account"
+                       class="danger">
+
                         Delete Account
+
                     </a>
 
                 {% else %}
 
-                    <a href="/login-choice">Login / Signup</a>
+                    <a href="/login-choice">
+                        Login / Signup
+                    </a>
 
                 {% endif %}
 
@@ -124,7 +175,9 @@ href="{{ url_for('static', filename='css/style.css') }}">
 
         </div>
 
-    </div>
+    {% endif %}
+
+</div>
 
 </nav>
 
