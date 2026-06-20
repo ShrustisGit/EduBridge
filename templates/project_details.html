@@ -14,9 +14,15 @@
             {{ project.category }}
         </div>
 
-        <p class="owner-name">
-            By {{ project.owner_name }}
-        </p>
+      <p class="owner-name">
+    By {{ project.owner_name }}
+
+    {% if student and student.is_verified == 1 %}
+        <span class="verified-badge">
+            ✔ Verified Project Owner
+        </span>
+    {% endif %}
+</p>
     </div>
 
 </div>
