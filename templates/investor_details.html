@@ -12,7 +12,21 @@
 
         <div>
             <h1>{{ investor.company_name }}</h1>
-            <h4>{{ investor.name }}</h4>
+            <h2>
+
+    {{ investor.name }}
+
+    {% if investor.is_verified == 1 %}
+
+        <span class="verified-badge">
+
+            ✔ Verified Investor
+
+        </span>
+
+    {% endif %}
+
+</h2>
             <span class="role-badge">
                 {{ investor.role_at_company }}
             </span>
@@ -51,6 +65,7 @@
         <p>{{ investor.about_company }}</p>
 
     </div>
+    
 
 </div>
 
