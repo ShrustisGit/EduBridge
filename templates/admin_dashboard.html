@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="admin-container">
+
+    <h1>🛡️ Admin Audit Dashboard</h1>
+
+    
+    <!-- Top Navigation -->
+    <div class="admin-tabs">
+
+        <button class="tab-btn active"
+                onclick="showSection('students', this)">
+            👨‍🎓 Student List
+        </button>
+
+        <button class="tab-btn"
+                onclick="showSection('investors', this)">
+            💼 Investor List
+        </button>
+
+        <button class="tab-btn"
+                onclick="showSection('projects', this)">
+            📁 Project List
+        </button>
+
+    </div>
+
+
+    <!-- STUDENTS -->
+    <div id="students" class="admin-section">
+
+        <h2>👨‍🎓 Students</h2>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Contact</th>
+                <th>University</th>
+                <th>Education-Branch</th>
+                <th>Enrollment no</th>
+                <th>Id Card</th>
+                <th>City</th>
+                <th>Created</th>
+                <th>Verified</th>
+                <th>Action</th>
+            </tr>
+
+            {% for s in students %}
+            <tr>
+
+                <td>{{ s.id }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.email }}</td>
+                <td>{{ s.contact }}</td>
+                <td>{{ s.university_name }}</td>
+                <td>{{ s.education }}-{{ s.branch }}</td>
+                <td>{{ s.enrollment_no }}</td>
+                <td> {% if s.id_photo %} 
+                    <a href="{{ url_for('uploaded_id_card', filename=s.id_photo) }}" 
+                    target="_blank" class="view-id-btn"> View ID </a> 
+                    {% else %} 
+                    Not Uploaded {% endif %} </td>
+                <td>{{ s.city }}</td>
+                <td>{{ s.created_at }}</td>
+                <td>
+
+{% if s.is_verified == 1 %}
+
+    <span class="verified-status">
+        ✅ Verified
+    </span>
+
+    <a href="/admin/unverify-student/{{ s.id }}">
+        Remove
+    </a>
+
+{% else %}
+
+    <a href="/admin/verify-student/{{ s.id }}"
+       class="approve-btn">
+
+       Verify
+
+    </a>
+
+{% endif %}
+
+</td>
+
+                <td>
+                    <a href="/admin/delete-student/{{ s.id }}"
+                       class="delete-btn"
+                       onclick="return confirm('Delete this student?')">
+
+                       Delete
+
+                    </a>
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+
+    <!-- INVESTORS -->
+    <div id="investors"
+         class="admin-section"
+         style="display:none;">
+
+        <h2>💼 Investors</h2>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Email</th>
+                <th>Contact</th>
+                <th>Created</th>
+                <th>Profile</th>
+                <th>Verified</th>
+                <th>Action</th>
+            </tr>
+
+            {% for i in investors %}
+            <tr>
+
+                <td>{{ i.id }}</td>
+                <td>{{ i.name }}</td>
+                <td>{{ i.company_name }}</td>
+                <td>{{ i.email }}</td>
+                <td>{{ i.contact }}</td>
+                <td>{{ i.created_at }}</td>
+                <td>
+    <a href="/investor/{{ i.id }}"
+       class="view-investor-btn">
+
+       View Profile →
+
+    </a>
+</td>
+<td>
+
+{% if i.is_verified == 1 %}
+
+    <span class="verified-status">
+
+        ✅ Verified
+
+    </span>
+
+    <a href="/admin/unverify-investor/{{ i.id }}">
+        Remove
+    </a>
+
+{% else %}
+
+    <a href="/admin/verify-investor/{{ i.id }}"
+       class="approve-btn">
+
+       Verify
+
+    </a>
+
+{% endif %}
+
+</td>
+                <td>
+                    <a href="/admin/delete-investor/{{ i.id }}"
+                       class="delete-btn"
+                       onclick="return confirm('Delete this investor?')">
+
+                       Delete
+
+                    </a>
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+
+    <!-- PROJECTS -->
+    <div id="projects"
+         class="admin-section"
+         style="display:none;">
+
+        <h2>📁 Projects</h2>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Owner</th>
+                <th>Funding</th>
+                <th>Category</th>
+                <th>Created</th>
+                <th>Project</th>
+                <th>Action</th>
+            </tr>
+
+            {% for p in projects %}
+            <tr>
+
+                <td>{{ p.id }}</td>
+                <td>{{ p.title }}</td>
+                <td>{{ p.owner_name }}</td>
+                <td>₹{{ p.funding_required }}</td>
+                <td>{{ p.category }}</td>
+                <td>{{ p.created_at }}</td>
+                <td>
+    <a href="/project/{{ p.id }}"
+       class="view-btn">
+
+       View Profile
+
+    </a>
+</td>
+
+                <td>
+                    <a href="/admin/delete-project/{{ p.id }}"
+                       class="delete-btn"
+                       onclick="return confirm('Delete this project?')">
+
+                       Delete
+
+                    </a>
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function showSection(sectionId, button){
+
+    document.querySelectorAll('.admin-section')
+    .forEach(function(sec){
+        sec.style.display='none';
+    });
+
+    document.getElementById(sectionId)
+    .style.display='block';
+
+
+    document.querySelectorAll('.tab-btn')
+    .forEach(function(btn){
+        btn.classList.remove('active');
+    });
+
+    button.classList.add('active');
+}
+
+</script>
+
+{% endblock %}
