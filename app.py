@@ -11,11 +11,23 @@ from dotenv import load_dotenv
 from flask_mail import Message
 from flask import flash
 from flask import jsonify
+from flask import send_file
 import random
-
-
-
+import pandas as pd
 import os
+from datetime import datetime
+
+EXCEL_FILE = "project_history.xlsx"
+
+def save_project_history(data): 
+        if os.path.exists(EXCEL_FILE): 
+            df = pd.read_excel(EXCEL_FILE)
+        else: 
+            df = pd.DataFrame() 
+        df = pd.concat(
+             [df, pd.DataFrame([data])],
+             ignore_index=True ) 
+        df.to_excel(EXCEL_FILE, index=False)
 
 load_dotenv()
 
@@ -32,6 +44,30 @@ def download_pdf(filename):
     return send_from_directory(
         app.config['UPLOAD_FOLDER'],
         filename,
+        as_attachment=True
+    )
+
+@app.route('/uploads/id_cards/<filename>')
+def show_id_card(filename):
+    return send_from_directory(
+        os.path.join(app.root_path, 'uploads', 'id_cards'),
+        filename
+    )
+
+@app.route('/download-project-history')
+def download_project_history():
+
+    if (
+        'student_id' not in session and
+        'investor_id' not in session and
+        'admin_id' not in session
+    ):
+        return redirect('/login-choice')
+
+    excel_file = "project_history.xlsx"
+
+    return send_file(
+        excel_file,
         as_attachment=True
     )
 
@@ -124,7 +160,7 @@ def login_choice():
     return render_template('login_choice.html')
 
 #student_signup
-@app.route('/student-signup', methods=['GET','POST'])
+@app.route('/student-signup', methods=['GET', 'POST'])
 def student_signup():
 
     if request.method == 'POST':
@@ -134,70 +170,74 @@ def student_signup():
         contact = request.form['contact']
         password = request.form['password']
         university = request.form['university']
-        college_code = request.form['college_code']
         education = request.form['education']
         branch = request.form['branch']
         country = request.form['country']
         state = request.form['state']
         city = request.form['city']
+        college_code = request.form['college_code']
         enrollment = request.form['enrollment']
+
+        # Upload ID Card
+        id_photo = request.files['id_photo']
+
+        filename = ""
+
+        if id_photo and id_photo.filename != "":
+
+            filename = secure_filename(id_photo.filename)
+
+            upload_folder = os.path.join(
+                app.root_path,
+                'static',
+                'uploads',
+                'id_cards'
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+
+            id_photo.save(
+                os.path.join(upload_folder, filename)
+            )
 
         cur = mysql.connection.cursor()
 
-        # Check if email already exists
-        cur.execute(
-            "SELECT id FROM students WHERE email=%s",
-            (email,)
-        )
-
-        existing_user = cur.fetchone()
-
-        if existing_user:
-
-            flash(
-                "This email is already registered. Please login.",
-                "error"
-            )
-
-            cur.close()
-
-            return redirect('/student-signup')
-
-        # Insert new student
         cur.execute("""
-        INSERT INTO students
-        (
-            name,
-            email,
-            contact,
-            password,
-            university_name,
-            college_code,
-            education,
-            branch,
-            country,
-            state,
-            city,
-            enrollment_no
-        )
-        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        """,
-        (
+            INSERT INTO students
+            (
+                name,
+                email,
+                contact,
+                password,
+                university_name,
+                education,
+                branch,
+                city,
+                enrollment_no,
+                college_code,
+                country,
+                state,
+                id_photo
+            )
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
             name,
             email,
             contact,
             password,
             university,
-            college_code,
             education,
             branch,
+            city,
+            enrollment,
+            college_code,
             country,
             state,
-            city,
-            enrollment
+            filename
         ))
 
         mysql.connection.commit()
+
         cur.close()
 
         flash(
@@ -208,6 +248,7 @@ def student_signup():
         return redirect('/student-login')
 
     return render_template('student_signup.html')
+
 
 #student_login
 @app.route('/student-login', methods=['GET','POST'])
@@ -615,7 +656,8 @@ def add_project():
 
         filename = ""
 
-        if pdf:
+        if pdf and pdf.filename != "":
+
             filename = secure_filename(pdf.filename)
 
             pdf.save(
@@ -625,23 +667,24 @@ def add_project():
                 )
             )
 
-        cur = mysql.connection.cursor()
+        cur = mysql.connection.cursor(DictCursor)
 
+        # Insert project into MySQL
         cur.execute("""
-        INSERT INTO projects
-        (
-            student_id,
-            title,
-            short_description,
-            detailed_description,
-            funding_required,
-            interest,
-            return_months,
-            category,
-            project_pdf
-        )
-        VALUES
-        (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            INSERT INTO projects
+            (
+                student_id,
+                title,
+                short_description,
+                detailed_description,
+                funding_required,
+                interest,
+                return_months,
+                category,
+                project_pdf
+            )
+            VALUES
+            (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (
             session['student_id'],
@@ -656,14 +699,52 @@ def add_project():
         ))
 
         mysql.connection.commit()
+
+        project_id = cur.lastrowid
+
+        # Get student details
+        cur.execute("""
+            SELECT name, email
+            FROM students
+            WHERE id=%s
+        """, (session['student_id'],))
+
+        student = cur.fetchone()
+
+        # Save project into Excel history
+        history = {
+            "Project ID": project_id,
+            "Title": title,
+            "Student Name": student['name'],
+            "Student Email": student['email'],
+            "Category": category,
+            "Funding Required": funding,
+            "Interest": interest,
+            "Return Months": months,
+            "PDF": filename,
+            "Created At": datetime.now(),
+            "Status": "Active"
+        }
+
+        save_project_history(history)
+
         cur.close()
+
         flash(
-    "Project added successfully.",
-    "success"
-)
+            "Project added successfully.",
+            "success"
+        )
+
         return redirect('/projects')
 
     return render_template('add_project.html')
+
+@app.route('/uploads/id_cards/<filename>')
+def uploaded_id_card(filename):
+    return send_from_directory(
+        'uploads/id_cards',
+        filename
+    )
 
 @app.route('/projects')
 def projects():
@@ -729,7 +810,9 @@ def project_details(id):
             p.*,
             s.name AS owner_name,
             s.email,
-            s.contact
+            s.contact,        
+            s.is_verified
+
         FROM projects p
         LEFT JOIN students s
         ON p.student_id = s.id
@@ -746,7 +829,7 @@ def project_details(id):
     # STUDENT DETAILS
     # ==========================
     cur.execute("""
-        SELECT id, name, email, contact, university_name, city, state
+        SELECT id, name, email, contact, university_name, city, state,is_verified
         FROM students
         WHERE id=%s
     """, (project['student_id'],))
@@ -806,45 +889,50 @@ def project_details(id):
 
     investors = cur.fetchall()
 
-    # ==========================
+   # ==========================
     # CURRENT INVESTOR INFO
     # ==========================
     investor_name = None
     investor_contact = None
 
     if session.get('investor_id'):
+
         cur.execute("""
             SELECT name, contact
             FROM investors
             WHERE id=%s
         """, (session['investor_id'],))
 
-        inv = cur.fetchone()
+    inv = cur.fetchone()
 
-        if inv:
-            investor_name = inv['name']
-            investor_contact = inv['contact']
+    if inv:
+        investor_name = inv['name']
+        investor_contact = inv['contact']
+
 
     # ==========================
-    # INVESTMENT REQUESTS (FIXED HERE)
+    # INVESTMENT REQUESTS
     # ==========================
-        cur.execute("""
-            SELECT
-            ir.*,
-            i.name,
-            i.company_name,
-            i.role_at_company,
-            i.city
-            FROM investment_requests ir
-            JOIN investors i
-            ON ir.investor_id = i.id
-            WHERE ir.project_id=%s
-            ORDER BY ir.created_at DESC
-        """,(id,))
+    cur.execute("""
+        SELECT
+        ir.*,
+        i.name,
+        i.company_name,
+        i.role_at_company,
+        i.city,
+        i.is_verified
+        FROM investment_requests ir
+        JOIN investors i
+        ON ir.investor_id = i.id
+        WHERE ir.project_id=%s
+        ORDER BY ir.created_at DESC
+    """, (id,))
 
     investment_requests = cur.fetchall()
 
     print("Investment Requests:", investment_requests)
+
+    
 
     cur.close()
 
@@ -864,6 +952,8 @@ def project_details(id):
         room_id=room_id,
         investment_requests=investment_requests
     )
+
+
 @app.route('/delete-account')
 def delete_account():
 
@@ -918,7 +1008,7 @@ def delete_project(id):
         "warning"
     )
 
-    return redirect('/my-projects')
+    return redirect('/projects')
 
 
 @app.route('/update-project/<int:id>', methods=['GET','POST'])
@@ -1010,7 +1100,8 @@ def my_projects():
         'my_projects.html',
         projects=projects
     )
-@app.route('/profile', methods=['GET','POST'])
+
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
 
     if 'student_id' not in session:
@@ -1020,36 +1111,96 @@ def profile():
 
     if request.method == 'POST':
 
-        cur.execute("""
-        UPDATE students
-        SET
-            name=%s,
-            email=%s,
-            contact=%s,
-            university_name=%s,
-            college_code=%s,
-            education=%s,
-            branch=%s,
-            country=%s,
-            state=%s,
-            city=%s,
-            enrollment_no=%s
-        WHERE id=%s
-        """,
-        (
-            request.form['name'],
-            request.form['email'],
-            request.form['contact'],
-            request.form['university'],
-            request.form['college_code'],
-            request.form['education'],
-            request.form['branch'],
-            request.form['country'],
-            request.form['state'],
-            request.form['city'],
-            request.form['enrollment'],
-            session['student_id']
-        ))
+        # Upload ID Photo
+        print("FILES:", request.files)
+
+        id_photo = request.files.get('id_photo')
+
+        print("PHOTO:", id_photo)
+
+        if id_photo and id_photo.filename != "":
+
+            filename = secure_filename(id_photo.filename)
+
+            upload_folder = os.path.join(
+                app.root_path,
+                'uploads',
+                'id_cards'
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+            file_path = os.path.join(upload_folder, filename)
+
+            print("Saving to:", file_path)
+
+            id_photo.save(file_path)
+
+            cur.execute("""
+                UPDATE students
+                SET
+                    name=%s,
+                    email=%s,
+                    contact=%s,
+                    university_name=%s,
+                    college_code=%s,
+                    education=%s,
+                    branch=%s,
+                    country=%s,
+                    state=%s,
+                    city=%s,
+                    enrollment_no=%s,
+                    id_photo=%s
+                WHERE id=%s
+            """,
+            (
+                request.form['name'],
+                request.form['email'],
+                request.form['contact'],
+                request.form['university'],
+                request.form['college_code'],
+                request.form['education'],
+                request.form['branch'],
+                request.form['country'],
+                request.form['state'],
+                request.form['city'],
+                request.form['enrollment'],
+                filename,
+                session['student_id']
+            ))
+
+        else:
+
+            # Update profile without changing ID photo
+            cur.execute("""
+                UPDATE students
+                SET
+                    name=%s,
+                    email=%s,
+                    contact=%s,
+                    university_name=%s,
+                    college_code=%s,
+                    education=%s,
+                    branch=%s,
+                    country=%s,
+                    state=%s,
+                    city=%s,
+                    enrollment_no=%s
+                WHERE id=%s
+            """,
+            (
+                request.form['name'],
+                request.form['email'],
+                request.form['contact'],
+                request.form['university'],
+                request.form['college_code'],
+                request.form['education'],
+                request.form['branch'],
+                request.form['country'],
+                request.form['state'],
+                request.form['city'],
+                request.form['enrollment'],
+                session['student_id']
+            ))
 
         mysql.connection.commit()
 
@@ -1402,7 +1553,6 @@ def reject_investor(req_id):
     cur.close()
 
     return redirect(request.referrer)
-
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -1415,6 +1565,241 @@ def privacy_policy():
 @app.route('/terms')
 def terms():
     return render_template('terms.html')
+
+
+@app.route('/admin-login', methods=['GET','POST'])
+def admin_login():
+
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password = request.form['password']
+
+        cur = mysql.connection.cursor(DictCursor)
+
+        cur.execute("""
+            SELECT *
+            FROM admins
+            WHERE username=%s
+            AND password=%s
+        """,(username,password))
+
+        admin = cur.fetchone()
+        cur.close()
+
+        if admin:
+            session['admin_id'] = admin['id']
+            return redirect('/admin-dashboard')
+
+        flash("Invalid credentials")
+
+    return render_template('admin_login.html')
+
+@app.route('/admin-dashboard')
+def admin_dashboard():
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor(DictCursor)
+
+    # All Students
+    cur.execute("""
+        SELECT *
+        FROM students
+        ORDER BY id DESC
+    """)
+    students = cur.fetchall()
+
+    # All Investors
+    cur.execute("""
+        SELECT *
+        FROM investors
+        ORDER BY id DESC
+    """)
+    investors = cur.fetchall()
+
+    # All Projects with Student Name
+    cur.execute("""
+        SELECT p.*,
+               s.name AS owner_name
+        FROM projects p
+        JOIN students s
+        ON p.student_id = s.id
+        ORDER BY p.id DESC
+    """)
+    projects = cur.fetchall()
+
+    cur.close()
+
+    return render_template(
+        'admin_dashboard.html',
+        students=students,
+        investors=investors,
+        projects=projects
+    )
+
+
+@app.route('/admin/delete-student/<int:id>')
+def delete_student(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute(
+        "DELETE FROM students WHERE id=%s",
+        (id,)
+    )
+
+    mysql.connection.commit()
+    cur.close()
+
+    flash("Student deleted successfully")
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin/delete-investor/<int:id>')
+def delete_investor(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute(
+        "DELETE FROM investors WHERE id=%s",
+        (id,)
+    )
+
+    mysql.connection.commit()
+    cur.close()
+
+    flash("Investor deleted successfully")
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin/delete-project/<int:id>')
+def admin_delete_project(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    # Delete investment requests
+    cur.execute("""
+        DELETE FROM investment_requests
+        WHERE project_id=%s
+    """, (id,))
+
+    # Delete chat messages
+    cur.execute("""
+        DELETE cm
+        FROM chat_messages cm
+        JOIN project_conversations pc
+        ON cm.room_id = pc.id
+        WHERE pc.project_id=%s
+    """, (id,))
+
+    # Delete conversations
+    cur.execute("""
+        DELETE FROM project_conversations
+        WHERE project_id=%s
+    """, (id,))
+
+    # Delete project
+    cur.execute("""
+        DELETE FROM projects
+        WHERE id=%s
+    """, (id,))
+
+    mysql.connection.commit()
+    cur.close()
+
+    flash("Project deleted successfully.", "success")
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin/verify-student/<int:id>')
+def verify_student(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute(
+        "UPDATE students SET is_verified=1 WHERE id=%s",
+        (id,)
+    )
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin/unverify-student/<int:id>')
+def unverify_student(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute(
+        "UPDATE students SET is_verified=0 WHERE id=%s",
+        (id,)
+    )
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin/verify-investor/<int:id>')
+def verify_investor(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute(
+        "UPDATE investors SET is_verified=1 WHERE id=%s",
+        (id,)
+    )
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin/unverify-investor/<int:id>')
+def unverify_investor(id):
+
+    if 'admin_id' not in session:
+        return redirect('/admin-login')
+
+    cur = mysql.connection.cursor()
+
+    cur.execute(
+        "UPDATE investors SET is_verified=0 WHERE id=%s",
+        (id,)
+    )
+
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect('/admin-dashboard')
+
+@app.route('/admin-logout')
+def admin_logout():
+
+    session.pop('admin_id', None)
+
+    return redirect('/admin-login')
 
 if __name__ == "__main__":
     app.run(debug=True)
