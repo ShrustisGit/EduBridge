@@ -2197,3 +2197,76 @@ body{
     font-weight:600;
     color:#0b2d57;
 }
+
+.id-card-preview{
+    width:250px;
+    height:250px;
+    border-radius:10px;
+    border:2px solid #ddd;
+    margin-top:10px;
+    display:block;
+}
+
+.admin-tabs{
+    display:flex;
+    gap:15px;
+    margin:25px 0;
+}
+
+.tab-btn{
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    background:#e5e7eb;
+}
+
+.tab-btn.active{
+    background:#0b2d57;
+    color:white;
+}
+
+.admin-section{
+    margin-top:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+th{
+    background:#0b2d57;
+    color:white;
+}
+
+th,td{
+    padding:12px;
+    border:1px solid #ddd;
+    text-align:center;
+}
+
+.delete-btn{
+    background:#ef4444;
+    color:white;
+    padding:8px 15px;
+    border-radius:6px;
+    text-decoration:none;
+}
+
+.verified-badge{
+    background:#e8f7ee;
+    color:#1b8f4b;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+    margin-left:8px;
+}
+
+.verified-status{
+    color:#1b8f4b;
+    font-weight:700;
+}
